@@ -1,9 +1,7 @@
 from pyspark.sql import SparkSession
 
-# Create a Spark session
 spark = SparkSession.builder \
     .appName("MaxPrimeNumber") \
-    .config("spark.master", "spark://localhost:7077") \
     .getOrCreate()
 
 # Create an RDD with N integers
@@ -28,5 +26,4 @@ max_prime = prime_numbers.max()
 # Print the maximum prime number
 print("Max Prime Number:", max_prime)
 
-# Stop the Spark session
 spark.stop()
