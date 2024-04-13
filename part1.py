@@ -1,39 +1,32 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean, col, when
 
-def main():
-    # Initialize Spark Session
-    spark = SparkSession.builder \
-        .appName("Diabetes Data Analysis") \
-        .getOrCreate()
+# Create a Spark session
+spark = SparkSession.builder \
+    .appName("MaxPrimeNumber") \
+    .config("spark.master", "spark://localhost:7077") \
+    .getOrCreate()
 
-    # 1. Load "csv" data into a DataFrame
-    df = spark.read.csv("diabetes.csv", header=True, inferSchema=True)
+# Create an RDD with N integers
+N = 121000
+numbers = spark.sparkContext.parallelize(range(2, N))
 
-    # Display the initial data for verification
-    df.show()
+# Function to check if a number is prime
+def is_prime(num):
+    if num <= 1:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
 
-    # 2. Update rows with BMI=0 with the mean BMI of non-zero values and write into a new dataframe
-    mean_bmi = df.filter(df.BMI != 0).agg(mean(df.BMI)).first()[0]
-    df_nonzero_BMI = df.withColumn("BMI", when(col("BMI") == 0, mean_bmi).otherwise(col("BMI")))
+# Filter the RDD to get prime numbers
+prime_numbers = numbers.filter(is_prime)
 
-    # Display the updated DataFrame
-    df_nonzero_BMI.show()
+# Get the maximum prime number
+max_prime = prime_numbers.max()
 
-    # 3. Create a new dataframe that shows rows with age > 35
-    df_outcome = df.filter(df.Age > 35)
+# Print the maximum prime number
+print("Max Prime Number:", max_prime)
 
-    # Display the dataframe for age > 35
-    df_outcome.show()
-
-    # 4. Show only the rows where Diabetes Pedigree Function value is greater than or equal to 0.51
-    df_pedigree = df.filter(df.DiabetesPedigreeFunction >= 0.51)
-
-    # Display the DataFrame with DiabetesPedigreeFunction >= 0.51
-    df_pedigree.show()
-
-    # Stop the Spark session
-    spark.stop()
-
-if __name__ == "__main__":
-    main()
+# Stop the Spark session
+spark.stop()
