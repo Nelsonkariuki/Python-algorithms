@@ -1,0 +1,1 @@
+alert tcp any any -> any any (content:"|FF D8 FF|"; msg:"JPEG image transfer detected"; sid:100007;)
